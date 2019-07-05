@@ -18,18 +18,12 @@ package org.slim3.tester;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import javax.servlet.*;
+import javax.servlet.descriptor.JspConfigDescriptor;
 
+import org.slim3.util.ClassUtil;
 import org.slim3.util.WrapRuntimeException;
 
 /**
@@ -45,12 +39,22 @@ public class MockServletContext implements ServletContext, Serializable {
     /**
      * Major Version
      */
-    public static final int MAJOR_VERSION = 2;
+    public static final int MAJOR_VERSION = 3;
 
     /**
      * Minor Version
      */
-    public static final int MINOR_VERSION = 4;
+    public static final int MINOR_VERSION = 1;
+
+    private static final Set<SessionTrackingMode> DEFAULT_SESSION_TRACKING_MODES = new LinkedHashSet<>(4);
+
+    static {
+        DEFAULT_SESSION_TRACKING_MODES.add(SessionTrackingMode.COOKIE);
+        DEFAULT_SESSION_TRACKING_MODES.add(SessionTrackingMode.URL);
+        DEFAULT_SESSION_TRACKING_MODES.add(SessionTrackingMode.SSL);
+    }
+
+    private final Set<String> declaredRoles = new LinkedHashSet<>();
 
     /**
      * The servlet context name.
@@ -99,6 +103,9 @@ public class MockServletContext implements ServletContext, Serializable {
      */
     protected MockRequestDispatcher latestRequestDispatcher;
 
+    private Set<SessionTrackingMode> sessionTrackingModes;
+
+    private final SessionCookieConfig sessionCookieConfig = new MockSessionCookieConfig();
     /**
      * Constructor.
      */
@@ -259,8 +266,13 @@ public class MockServletContext implements ServletContext, Serializable {
      * @param value
      *            the value
      */
-    public void setInitParameter(String name, String value) {
-        initParameterMap.put(name, value);
+    public boolean setInitParameter(String name, String value) {
+        try {
+            initParameterMap.put(name, value);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -315,5 +327,152 @@ public class MockServletContext implements ServletContext, Serializable {
      */
     public void setContextPath(String contextPath) {
         this.contextPath = contextPath;
+    }
+
+    /**
+     *  for 3.1
+     *
+     * @return
+     */
+
+    @Override
+    public int getEffectiveMajorVersion() {
+        return MAJOR_VERSION;
+    }
+
+    @Override
+    public int getEffectiveMinorVersion() {
+        return MINOR_VERSION;
+    }
+
+    //---------------------------------------------------------------------
+    // Unsupported Servlet 3.0 registration methods
+    //---------------------------------------------------------------------
+    @Override
+    public ServletRegistration.Dynamic addServlet(String s, String s1) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(String s, Servlet servlet) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(String s, Class<? extends Servlet> aClass) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T extends Servlet> T createServlet(Class<T> aClass) throws ServletException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ServletRegistration getServletRegistration(String s) {
+        return null;
+    }
+
+    @Override
+    public Map<String, ? extends ServletRegistration> getServletRegistrations() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(String s, String s1) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(String s, Filter filter) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(String s, Class<? extends Filter> aClass) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T extends Filter> T createFilter(Class<T> aClass) throws ServletException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public FilterRegistration getFilterRegistration(String s) {
+        return null;
+    }
+
+    @Override
+    public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public SessionCookieConfig getSessionCookieConfig() {
+        return this.getSessionCookieConfig();
+    }
+
+    @Override
+    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
+        this.sessionTrackingModes = sessionTrackingModes;
+    }
+
+    @Override
+    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
+        return DEFAULT_SESSION_TRACKING_MODES;
+    }
+
+    @Override
+    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+        return (this.sessionTrackingModes != null ?
+                Collections.unmodifiableSet(this.sessionTrackingModes) : DEFAULT_SESSION_TRACKING_MODES);
+    }
+
+    @Override
+    public void addListener(String s) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T extends EventListener> void addListener(T t) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void addListener(Class<? extends EventListener> aClass) {
+
+    }
+
+    @Override
+    public <T extends EventListener> T createListener(Class<T> aClass) throws ServletException {
+        throw new UnsupportedOperationException();
+    }
+    //---------------------------------------------------------------------
+    // Unsupported Servlet 3.0 registration methods
+    //---------------------------------------------------------------------
+
+    @Override
+    public JspConfigDescriptor getJspConfigDescriptor() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return ClassUtil.getDefaultClassLoader();
+    }
+
+    @Override
+    public void declareRoles(String... roleNames) {
+        //Assert.notNull(roleNames, "Role names array must not be null");
+        for (String roleName : roleNames) {
+            //Assert.hasLength(roleName, "Role name must not be empty");
+            this.declaredRoles.add(roleName);
+        }
+    }
+
+    @Override
+    public String getVirtualServerName() {
+        throw new UnsupportedOperationException();
     }
 }
