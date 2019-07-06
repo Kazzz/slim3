@@ -276,11 +276,6 @@ public class FrontController implements Filter {
             if (controller != null) {
                 processController(request, response, controller);
             } else {
-                if (request instanceof HotHttpServletRequestWrapper) {
-                    request =
-                        ((HotHttpServletRequestWrapper) request)
-                            .getOriginalRequest();
-                }
                 chain.doFilter(request, response);
             }
         } finally {

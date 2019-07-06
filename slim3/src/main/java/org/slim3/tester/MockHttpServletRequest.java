@@ -19,20 +19,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import javax.servlet.*;
+import javax.servlet.http.*;
 
 import org.slim3.util.ArrayMap;
 import org.slim3.util.StringUtil;
@@ -45,7 +35,7 @@ import org.slim3.util.StringUtil;
  * 
  */
 public class MockHttpServletRequest implements HttpServletRequest {
-
+    private DispatcherType dispatcherType = DispatcherType.REQUEST;
     /**
      * The servlet context.
      */
@@ -912,6 +902,81 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return servletContext.getRealPath(path);
     }
 
+    @Override
+    public String changeSessionId() {
+        if (this.session instanceof MockHttpSession) {
+            return ((MockHttpSession) this.session).changeSessionId();
+        }
+        return this.session.getId();
+    }
+
+    @Override
+    public boolean authenticate(HttpServletResponse httpServletResponse) throws IOException, ServletException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void login(String s, String s1) throws ServletException {
+
+    }
+
+    @Override
+    public void logout() throws ServletException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Collection<Part> getParts() throws IOException, ServletException {
+        return null;
+    }
+
+    @Override
+    public Part getPart(String s) throws IOException, ServletException {
+        return null;
+    }
+
+    @Override
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass) throws IOException, ServletException {
+        return null;
+    }
 
 
+    @Override
+    public long getContentLengthLong() {
+        return getContentLength();
+    }
+
+    @Override
+    public ServletContext getServletContext() {
+        return this.servletContext;
+    }
+
+    @Override
+    public AsyncContext startAsync() throws IllegalStateException {
+        return startAsync(this, null);
+    }
+
+    @Override
+    public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isAsyncStarted() {
+        return false;
+    }
+
+    @Override
+    public boolean isAsyncSupported() {
+        return false;
+    }
+
+    @Override
+    public AsyncContext getAsyncContext() {
+        return null;
+    }
+    @Override
+    public DispatcherType getDispatcherType() {
+        return this.dispatcherType;
+    }
 }

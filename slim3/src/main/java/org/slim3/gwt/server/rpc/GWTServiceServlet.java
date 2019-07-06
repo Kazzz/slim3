@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slim3.controller.HotReloadingClassLoader;
 import org.slim3.util.CipherFactory;
 import org.slim3.util.ClassUtil;
 import org.slim3.util.RequestLocator;
@@ -394,13 +393,6 @@ public class GWTServiceServlet extends RemoteServiceServlet {
     @Override
     protected SerializationPolicy doGetSerializationPolicy(
             HttpServletRequest request, String moduleBaseURL, String strongName) {
-        if (Thread.currentThread().getContextClassLoader() instanceof HotReloadingClassLoader) {
-            return loadHotSerializationPolicy(
-                this,
-                request,
-                moduleBaseURL,
-                strongName);
-        }
         return super.doGetSerializationPolicy(
             request,
             moduleBaseURL,

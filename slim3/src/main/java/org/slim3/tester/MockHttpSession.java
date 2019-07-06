@@ -53,7 +53,7 @@ public class MockHttpSession implements HttpSession, Serializable {
     /**
      * The identifier.
      */
-    protected String id = "1";
+    protected int id = 1;
 
     /**
      * Whether this session is created by the current request.
@@ -97,7 +97,7 @@ public class MockHttpSession implements HttpSession, Serializable {
     }
 
     public String getId() {
-        return id;
+        return Integer.toString(this.id);
     }
 
     /**
@@ -107,7 +107,11 @@ public class MockHttpSession implements HttpSession, Serializable {
      *            the identifier
      */
     public void setId(String id) {
-        this.id = id;
+        try {
+            this.id = Integer.parseInt(id);
+        } catch (Exception e) {
+            //
+        }
     }
 
     /**
@@ -199,5 +203,15 @@ public class MockHttpSession implements HttpSession, Serializable {
      */
     public boolean isValid() {
         return valid;
+    }
+
+    /**
+     * As of Servlet 3.1, the id of a session can be changed.
+     * @return the new session id
+     * @since 4.0.3
+     */
+    public String changeSessionId() {
+        this.id = this.id + 1;
+        return Integer.toString(this.id);
     }
 }
